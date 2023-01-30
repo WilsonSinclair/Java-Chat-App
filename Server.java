@@ -1,18 +1,15 @@
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class Server {
 
-    private static final int BUFF_SIZE = 32;
+    public static final int BUFF_SIZE = 32;
+    private static final int MAX_WORKERS = 10;
+    private static Worker[] workerPool = new Worker[MAX_WORKERS];
 
     private static ServerSocket initializeServer(int port) throws IOException {
         if (port <= 1023 || port > 65535) {
-            System.out.println("Port must be greater than 1023 and less than 65535");
-            System.exit(1);
+            throw new IllegalArgumentException("Port must be greater than 1023 and less than 65535");
         }
         
         try {
@@ -26,8 +23,7 @@ public class Server {
 
     private static void checkArguments(String[] args) {
         if (args.length < 1) {
-            System.out.println("Argument Error... Format: <Port>");
-            System.exit(1);
+            throw new IllegalArgumentException("Argument Error... Format: <Port>");
         }
     }
 
@@ -37,24 +33,22 @@ public class Server {
         int port = Integer.valueOf(args[0]);
         ServerSocket servSock = initializeServer(port);
         System.out.println("Server initialized on port: " + args[0]);
-
-        byte[] buffer = new byte[BUFF_SIZE];
-        int receivedMessageSize;
+        
+        //10 workers to handle 10 requests at a time
+        //an unlimited number of workers is bad as an attacker could create as many as they wanted and starve the server
+        for (int i = 0; i < MAX_WORKERS; i++) {
+            workerPool[i] = new Worker(i);
+        }
 
         //handle connections
         while (true) {  
             //accept a client
-            Socket s = servSock.accept();
-            System.out.println("New client at " + s.getInetAddress().getHostAddress() + " on port " + s.getPort());
-            
-            InputStream in = s.getInputStream();
-            OutputStream out = s.getOutputStream();
-            
-            while (true) {
-                receivedMessageSize = in.read(buffer);
-                if (receivedMessageSize == -1) break; // if the client disconnects
-                String received = new String(buffer, StandardCharsets.UTF_8);
-                System.out.println(received + " {From: " + s.getInetAddress().getHostAddress() + "}");    
+            for (Worker worker : workerPool) {
+               if (!worker.isBusy()) {
+                //blocks here and waits for a worker to accept an incomming connections
+                worker.handleConnection(servSock.accept());
+                System.out.println("Worker " + worker.getID() +  " has picked up a client."); 
+               } 
             }
         }
     }
