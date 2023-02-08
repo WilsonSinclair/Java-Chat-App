@@ -1,16 +1,15 @@
 import java.net.Socket;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class Worker implements Runnable {
 
     private int ID;
     private Thread thread;
     private Socket s;
-    private InputStream in;
-    private OutputStream out;
+    private DataInputStream in;
+    private DataOutputStream out;
 
     public Worker(int ID) {
         thread = new Thread(this);
@@ -19,31 +18,31 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        byte[] buffer = new byte[Server.BUFF_SIZE];
-        int receivedMessageSize;
 
         System.out.println("New client at " + s.getInetAddress().getHostAddress() + " on port " + s.getPort());
         
         try {
-             in = s.getInputStream();
-             out = s.getOutputStream();  
+             in = new DataInputStream(s.getInputStream());
+             out = new DataOutputStream(s.getOutputStream());  
         } catch (IOException e) {
             e.printStackTrace();
         }
         
         while (true) {
             try {
-                receivedMessageSize = in.read(buffer);
-                if (receivedMessageSize == -1) break; // if the client disconnects
+                String received = in.readUTF();
+                System.out.println(received + " {From: " + s.getInetAddress().getHostAddress() + "}");
+                Server.broadcastMessage(received, this);
             } catch (IOException e) {
                 e.printStackTrace();
+                Server.getConnections().remove(s);
+                break;
             }
-            String received = new String(buffer, StandardCharsets.UTF_8);
-            System.out.println(received + " {From: " + s.getInetAddress().getHostAddress() + "}");    
         }
-        
+
         //Once client disconnects, return the thread to the pool
         try {
+            System.out.println("Joining thread");
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -65,5 +64,9 @@ public class Worker implements Runnable {
 
     public boolean isBusy() {
         return thread.isAlive();
+    }
+
+    public Socket getSocket() {
+        return s;
     }
 }

@@ -1,11 +1,15 @@
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server {
 
     public static final int BUFF_SIZE = 32;
     private static final int MAX_WORKERS = 10;
     private static Worker[] workerPool = new Worker[MAX_WORKERS];
+    private static ArrayList<Socket> connections = new ArrayList<Socket>();
 
     private static ServerSocket initializeServer(int port) throws IOException {
         if (port <= 1023 || port > 65535) {
@@ -24,6 +28,25 @@ public class Server {
     private static void checkArguments(String[] args) {
         if (args.length < 1) {
             throw new IllegalArgumentException("Argument Error... Format: <Port>");
+        }
+    }
+
+    public static ArrayList<Socket> getConnections() {
+        return connections;
+    }
+
+    public static void broadcastMessage(String message, Worker sender) {
+        DataOutputStream out;
+        for (Worker w : workerPool) {
+            if (w.isBusy() && w != sender) {
+                try {
+                    out = new DataOutputStream(w.getSocket().getOutputStream());
+                    out.writeUTF(message);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -47,7 +70,9 @@ public class Server {
                if (!worker.isBusy()) {
                 //blocks here and waits for a worker to accept an incomming connections
                 worker.handleConnection(servSock.accept());
-                System.out.println("Worker " + worker.getID() +  " has picked up a client."); 
+
+                connections.add(worker.getSocket());
+                System.out.println("Worker " + worker.getID() +  " has picked up a client.");
                } 
             }
         }

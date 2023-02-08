@@ -1,12 +1,44 @@
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Scanner;
-import java.io.IOException;
-import java.io.InputStream;
 
-public class Client {
+import javax.swing.JFrame;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import java.awt.Dimension;
+
+public class Client extends JFrame implements Runnable {
 
     private static final int DEFAULT_PORT = 8080;
+    private static DataOutputStream out;
+    private static DataInputStream in;
+    private static Socket socket;
+    private static Thread incomingMessageThread;
+
+    public Client() {
+        setTitle("Chat App");
+        setSize(new Dimension(600, 600));
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //setVisible(true);
+        incomingMessageThread = new Thread(this);
+        incomingMessageThread.start();
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                String message = in.readUTF();
+                System.out.println(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
@@ -15,21 +47,29 @@ public class Client {
         String server = args[0];
         int servPort = (args.length == 2) ? Integer.parseInt(args[1]) : DEFAULT_PORT;
 
-        byte[] buffer;
-
-        Socket socket = new Socket(server, servPort);
+        socket = new Socket(server, servPort);
         System.out.println("Connected to server...");
 
-        InputStream in = socket.getInputStream();
-        OutputStream out = socket.getOutputStream();
+        out = new DataOutputStream(socket.getOutputStream());
+        in = new DataInputStream(socket.getInputStream());
+
+        new Client();
 
         Scanner scanner = new Scanner(System.in);
 
-        while (true) {
+        while (!socket.isClosed()) {
+
             String message = scanner.nextLine();
 
-            buffer = message.getBytes();
-            out.write(buffer); 
+            out.writeUTF(message);
         }
+        scanner.close();
+        
+        try {
+            incomingMessageThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }
