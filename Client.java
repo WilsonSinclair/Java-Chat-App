@@ -46,11 +46,13 @@ public class Client extends JFrame implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
+        
         if (args.length < 1) {
             throw new IllegalArgumentException("Parameters: <Server> [<Port>]");
         }
-
+        
         Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a Nickname: ");
         nickname = scanner.nextLine();
 
         String server = args[0];
