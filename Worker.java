@@ -32,6 +32,8 @@ public class Worker implements Runnable {
             try {
                 String received = in.readUTF();
                 System.out.println(received + " {From: " + s.getInetAddress().getHostAddress() + "}");
+                //Put any command logic here, such as /Name or something like that
+                
                 Server.broadcastMessage(received, this);
             } catch (IOException e) {
                 e.printStackTrace();

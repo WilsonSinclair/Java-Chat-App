@@ -16,6 +16,7 @@ public class Client extends JFrame implements Runnable {
     private static DataInputStream in;
     private static Socket socket;
     private static Thread incomingMessageThread;
+    private static String nickname;
 
     public Client() {
         setTitle("Chat App");
@@ -26,6 +27,10 @@ public class Client extends JFrame implements Runnable {
         //setVisible(true);
         incomingMessageThread = new Thread(this);
         incomingMessageThread.start();
+    }
+
+    public static String getNickname() {
+        return nickname;
     }
 
     @Override
@@ -44,6 +49,10 @@ public class Client extends JFrame implements Runnable {
         if (args.length < 1) {
             throw new IllegalArgumentException("Parameters: <Server> [<Port>]");
         }
+
+        Scanner scanner = new Scanner(System.in);
+        nickname = scanner.nextLine();
+
         String server = args[0];
         int servPort = (args.length == 2) ? Integer.parseInt(args[1]) : DEFAULT_PORT;
 
@@ -53,15 +62,15 @@ public class Client extends JFrame implements Runnable {
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
 
-        new Client();
+        out.writeUTF("(SERVER): " + nickname + " has joined the room!");
 
-        Scanner scanner = new Scanner(System.in);
+        new Client();
 
         while (!socket.isClosed()) {
 
             String message = scanner.nextLine();
 
-            out.writeUTF(message);
+            out.writeUTF(getNickname() + ": " + message);
         }
         scanner.close();
         
