@@ -1,13 +1,21 @@
 import java.net.Socket;
 import java.util.Scanner;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import java.awt.Dimension;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
 
 public class Client extends JFrame implements Runnable {
 
@@ -18,13 +26,50 @@ public class Client extends JFrame implements Runnable {
     private static Thread incomingMessageThread;
     private static String nickname;
 
+    private static final int WIDTH = 1200;
+    private static final int HEIGHT = (WIDTH / 16) * 9;
+
+    private JList<String> messagePane;
+    private JTextArea textField;
+    private JList<String> userList;
+    private DefaultListModel<String> userListModel;
+    private DefaultListModel<String> messagesModel;
+    
+
     public Client() {
         setTitle("Chat App");
-        setSize(new Dimension(600, 600));
+        setSize(new Dimension(WIDTH, HEIGHT));
         setLocationRelativeTo(null);
-        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //setVisible(true);
+        setDefaultLookAndFeelDecorated(true);
+
+        userListModel = new DefaultListModel<String>();
+        messagesModel = new DefaultListModel<String>();
+
+        setLayout(new BorderLayout());
+
+        textField = new JTextArea();
+        textField.setRows(8);
+        textField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        textField.setLineWrap(true);
+
+        messagePane = new JList<String>();
+        messagePane.setRequestFocusEnabled(false);
+        messagePane.setAutoscrolls(true);
+        messagePane.setModel(messagesModel);
+        messagePane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Messages"));
+
+        userList = new JList<>();
+        userList.setModel(userListModel);
+        userListModel.addElement(nickname);
+        userList.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Users"));
+
+        add(textField, BorderLayout.SOUTH);
+        add(messagePane);
+        add(userList, BorderLayout.EAST);
+
+        setVisible(true);
+
         incomingMessageThread = new Thread(this);
         incomingMessageThread.start();
     }
@@ -38,6 +83,7 @@ public class Client extends JFrame implements Runnable {
         while (true) {
             try {
                 String message = in.readUTF();
+                messagesModel.addElement(message);
                 System.out.println(message);
             } catch (IOException e) {
                 e.printStackTrace();

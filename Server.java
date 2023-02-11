@@ -38,7 +38,7 @@ public class Server {
     public static void broadcastMessage(String message, Worker sender) {
         DataOutputStream out;
         for (Worker w : workerPool) {
-            if (w.isBusy() && w != sender) {
+            if (w.isBusy()) {
                 try {
                     out = new DataOutputStream(w.getSocket().getOutputStream());
                     out.writeUTF(message);
