@@ -4,12 +4,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
-public class Server {
+public class Server implements Runnable {
 
     public static final int BUFF_SIZE = 32;
     private static final int MAX_WORKERS = 10;
     private static Worker[] workerPool = new Worker[MAX_WORKERS];
     private static HashMap<Socket, String> connections = new HashMap<Socket, String>();
+    private static Thread clientListThread;
+
+    public Server() {
+        clientListThread = new Thread(this);
+        clientListThread.start();
+    }
 
     private static ServerSocket initializeServer(int port) throws IOException {
         if (port <= 1023 || port > 65535) {
@@ -50,6 +56,23 @@ public class Server {
         }
     }
 
+    @Override
+    public void run() {
+       while (true) {
+        //Update each user's client list
+        String clients = "";
+        for (String client : connections.values()) {
+            clients += client + ",";
+        }
+        broadcastMessage("(SERVER: CLIENT LIST)" + clients);
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+       } 
+    }
+
     public static void main(String[] args) throws IOException {
         checkArguments(args);
 
@@ -62,6 +85,8 @@ public class Server {
         for (int i = 0; i < MAX_WORKERS; i++) {
             workerPool[i] = new Worker(i);
         }
+
+        new Server();
 
         //handle connections
         while (true) {  

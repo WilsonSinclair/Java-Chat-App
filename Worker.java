@@ -31,13 +31,13 @@ public class Worker implements Runnable {
                 Server.broadcastMessage(received);
             } catch (IOException e) {
                 e.printStackTrace();
-                Server.getConnections().remove(s);
                 break;
             }
         }
 
         //Once client disconnects, return the thread to the pool
         try {
+            Server.getConnections().remove(s);
             System.out.println("Joining thread");
             thread.join();
         } catch (InterruptedException e) {
