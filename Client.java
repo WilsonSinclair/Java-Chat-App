@@ -62,6 +62,7 @@ public class Client extends JFrame implements Runnable, KeyListener {
         textField.setFont(new Font(Font.MONOSPACED, Font.TRUETYPE_FONT, 18));
         textField.setBackground(darkBlue);
         textField.setForeground(new Color(209, 209, 209));
+        textField.setCaretColor(new Color(132, 183, 7));
         textField.setRows(7);
         textField.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         textField.grabFocus();
@@ -88,7 +89,7 @@ public class Client extends JFrame implements Runnable, KeyListener {
         userListModel.addElement(nickname);
         userList.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.WHITE), "Users"));
         userList.setBackground(darkBlue);
-        userList.setForeground(new Color(155, 215, 9));
+        userList.setForeground(new Color(132, 183, 7));
         userList.setFont(new Font(Font.MONOSPACED, Font.CENTER_BASELINE, 16));
 
         add(textField, BorderLayout.SOUTH);
