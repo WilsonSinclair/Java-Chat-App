@@ -2,14 +2,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Server {
 
     public static final int BUFF_SIZE = 32;
     private static final int MAX_WORKERS = 10;
     private static Worker[] workerPool = new Worker[MAX_WORKERS];
-    private static ArrayList<Socket> connections = new ArrayList<Socket>();
+    private static HashMap<Socket, String> connections = new HashMap<Socket, String>();
 
     private static ServerSocket initializeServer(int port) throws IOException {
         if (port <= 1023 || port > 65535) {
@@ -31,11 +31,11 @@ public class Server {
         }
     }
 
-    public static ArrayList<Socket> getConnections() {
+    public static HashMap<Socket, String> getConnections() {
         return connections;
     }
 
-    public static void broadcastMessage(String message, Worker sender) {
+    public static void broadcastMessage(String message) {
         DataOutputStream out;
         for (Worker w : workerPool) {
             if (w.isBusy()) {
@@ -71,7 +71,8 @@ public class Server {
                 //blocks here and waits for a worker to accept an incomming connections
                 worker.handleConnection(servSock.accept());
 
-                connections.add(worker.getSocket());
+                connections.put(worker.getSocket(), worker.getClientNickname());
+                broadcastMessage("(SERVER): " + worker.getClientNickname() + " has joined the room!");
                 System.out.println("Worker " + worker.getID() +  " has picked up a client.");
                } 
             }

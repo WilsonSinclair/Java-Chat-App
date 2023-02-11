@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
-public class Client extends JFrame implements Runnable {
+public class Client extends JFrame implements Runnable, KeyListener {
 
     private static final int DEFAULT_PORT = 8080;
     private static DataOutputStream out;
@@ -31,7 +33,7 @@ public class Client extends JFrame implements Runnable {
     private static final int HEIGHT = (WIDTH / 16) * 9;
 
     private JList<String> messagePane;
-    private JTextArea textField;
+    private static JTextArea textField;
     private JList<String> userList;
     private DefaultListModel<String> userListModel;
     private DefaultListModel<String> messagesModel;
@@ -50,10 +52,10 @@ public class Client extends JFrame implements Runnable {
         setLayout(new BorderLayout());
 
         textField = new JTextArea();
-        textField.setRows(8);
+        textField.setRows(7);
         textField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         textField.setLineWrap(true);
-
+        textField.addKeyListener(this);
 
         messagePane = new JList<String>();
         messagePane.setRequestFocusEnabled(false);
@@ -99,6 +101,31 @@ public class Client extends JFrame implements Runnable {
         }
     }
 
+    @Override
+    public void keyPressed(KeyEvent event) {
+        int key = event.getKeyCode();
+
+        if (key == KeyEvent.VK_ENTER) {
+            try {
+                out.writeUTF(getNickname() + ": " + textField.getText());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            textField.setCaretPosition(0);
+            textField.setText("");
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent event) {
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent event) {
+
+    }
+
     public static void main(String[] args) throws IOException {
         
         if (args.length < 1) {
@@ -118,7 +145,7 @@ public class Client extends JFrame implements Runnable {
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
 
-        out.writeUTF("(SERVER): " + nickname + " has joined the room!");
+        out.writeUTF(nickname);
 
         new Client();
 

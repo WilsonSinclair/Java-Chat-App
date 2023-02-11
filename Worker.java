@@ -10,6 +10,7 @@ public class Worker implements Runnable {
     private Socket s;
     private DataInputStream in;
     private DataOutputStream out;
+    private String clientNickname;
 
     public Worker(int ID) {
         thread = new Thread(this);
@@ -21,20 +22,13 @@ public class Worker implements Runnable {
 
         System.out.println("New client at " + s.getInetAddress().getHostAddress() + " on port " + s.getPort());
         
-        try {
-             in = new DataInputStream(s.getInputStream());
-             out = new DataOutputStream(s.getOutputStream());  
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
         while (true) {
             try {
                 String received = in.readUTF();
                 System.out.println(received + " {From: " + s.getInetAddress().getHostAddress() + "}");
                 //Put any command logic here, such as /Name or something like that
                 
-                Server.broadcastMessage(received, this);
+                Server.broadcastMessage(received);
             } catch (IOException e) {
                 e.printStackTrace();
                 Server.getConnections().remove(s);
@@ -53,6 +47,13 @@ public class Worker implements Runnable {
 
     public void handleConnection(Socket s) {
         this.s = s;
+        try {
+            in = new DataInputStream(s.getInputStream());
+            out = new DataOutputStream(s.getOutputStream()); 
+            clientNickname = in.readUTF();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         thread.start();
     }
 
@@ -62,6 +63,10 @@ public class Worker implements Runnable {
 
     public Thread getThread() {
         return thread;
+    }
+
+    public String getClientNickname() {
+        return clientNickname;
     }
 
     public boolean isBusy() {
