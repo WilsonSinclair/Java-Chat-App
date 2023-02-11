@@ -5,15 +5,16 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import java.awt.Dimension;
-
+import java.awt.event.AdjustmentListener;
+import java.awt.event.AdjustmentEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
@@ -34,7 +35,7 @@ public class Client extends JFrame implements Runnable {
     private JList<String> userList;
     private DefaultListModel<String> userListModel;
     private DefaultListModel<String> messagesModel;
-    
+    private JScrollPane messageScrollPane;
 
     public Client() {
         setTitle("Chat App");
@@ -53,11 +54,18 @@ public class Client extends JFrame implements Runnable {
         textField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         textField.setLineWrap(true);
 
+
         messagePane = new JList<String>();
         messagePane.setRequestFocusEnabled(false);
         messagePane.setAutoscrolls(true);
         messagePane.setModel(messagesModel);
         messagePane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Messages"));
+        messageScrollPane = new JScrollPane(messagePane);
+        messageScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+            public void adjustmentValueChanged(AdjustmentEvent e) {  
+                e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
+            }
+        });
 
         userList = new JList<>();
         userList.setModel(userListModel);
@@ -65,7 +73,7 @@ public class Client extends JFrame implements Runnable {
         userList.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Users"));
 
         add(textField, BorderLayout.SOUTH);
-        add(messagePane);
+        add(messageScrollPane);
         add(userList, BorderLayout.EAST);
 
         setVisible(true);
