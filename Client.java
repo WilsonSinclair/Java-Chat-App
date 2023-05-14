@@ -50,7 +50,6 @@ public class Client extends JFrame implements Runnable, KeyListener {
         setSize(new Dimension(WIDTH, HEIGHT));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setDefaultLookAndFeelDecorated(true);
 
         userListModel = new DefaultListModel<String>();
         messagesModel = new DefaultListModel<String>();

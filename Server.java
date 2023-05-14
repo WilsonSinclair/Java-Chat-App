@@ -72,7 +72,8 @@ public class Server implements Runnable {
         }
        } 
     }
-
+    
+    //Entry Point
     public static void main(String[] args) throws IOException {
         checkArguments(args);
 
