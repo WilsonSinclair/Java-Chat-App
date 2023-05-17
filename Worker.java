@@ -37,7 +37,7 @@ public class Worker implements Runnable {
 
         //Once client disconnects, return the thread to the pool
         try {
-            Server.getConnections().remove(s);
+            Server.removeConnection(s);
             System.out.println("Joining thread");
             thread.join();
         } catch (InterruptedException e) {

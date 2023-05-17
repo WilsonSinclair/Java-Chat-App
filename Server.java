@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 public class Server implements Runnable {
 
-    public static final int BUFF_SIZE = 32;
     private static final int MAX_WORKERS = 10;
     private static Worker[] workerPool = new Worker[MAX_WORKERS];
     private static HashMap<Socket, String> connections = new HashMap<Socket, String>();
@@ -39,6 +38,10 @@ public class Server implements Runnable {
 
     public static HashMap<Socket, String> getConnections() {
         return connections;
+    }
+
+    public static void removeConnection(Socket s) {
+        connections.remove(s);
     }
 
     public static void broadcastMessage(String message) {
